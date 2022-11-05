@@ -1,5 +1,7 @@
 #define u_time iGlobalTime
 
+
+//see https://www.youtube.com/watch?v=GAhu4ngQa48
 float rand(float num)
 {
     return fract(sin(num * 91.34588) * 4743.553);
