@@ -13,4 +13,12 @@ Im developing these shaders in Visual Studio Code using [this](https://marketpla
 
 Feel free to use these shaders partly or in full for what ever purpose you choose, but I would appreciate it if you could leave a link to this repository. See the license for specific information and the usual legal stuff.
 
+# What does that look like ?
 
+Kinda like this: 
+
+![Pic1](/samplePics/coloredRects.png)
+
+![Pic1](/samplePics/linkedLights.png)
+
+![Pic1](/samplePics/shaderWave.png)
