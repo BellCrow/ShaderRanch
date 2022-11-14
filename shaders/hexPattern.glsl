@@ -1,6 +1,7 @@
 #define PI 3.1415926
 #define PI2 (PI * 2.)
 #define PI4TH (PI / 4.)
+
 float rand(float co) 
 {
     return fract(sin(co*(90.5436)+0.234) * 47453.5453);
@@ -32,30 +33,41 @@ float DistancePointToLineSegment(vec2 queryPoint, vec2 startLineSegment, vec2 en
     return distance(nearestPointOnLineToGroundedPoint, groundedQueryPoint);
 }
 
-
-float isOnHex(vec2 uv)
+float SideOfLine(vec2 query, vec2 startLine, vec2 endLine)
 {
-    float polarDistance = distance(vec2(0), uv);
-    if(polarDistance < 0.23 || polarDistance > 0.25)
-    {
-        return 0.;
-    }
+    return 
+    (query.x - startLine.x)*(endLine.y - startLine.y)  - 
+    (query.y - startLine.y)*(endLine.x - startLine.x);
+}
 
-    
+float isOnHex(vec2 uv, float hexSize, vec2 pos)
+{
+    uv -= pos;
     float polarAngle = degrees(atan(uv.y , uv.x) + PI);
     float angledStart = polarAngle - mod(polarAngle, 60.);
     float angledEnd = angledStart + 60.;
-    vec2 segmentStart = vec2(polarDistance * cos(radians(angledStart)), polarDistance * sin(radians(angledStart)));
-    vec2 segmentEnd = vec2(polarDistance * cos(radians(angledEnd)), polarDistance * sin(radians(angledEnd)));
+    float startRad = radians(angledStart) - PI;
+    float endRad = radians(angledEnd )- PI;
+    vec2 segmentStart = vec2(hexSize * cos(startRad), hexSize * sin(startRad));
+    vec2 segmentEnd = vec2(hexSize * cos(endRad), hexSize * sin(endRad));
     float distanceUvToHexSegment = DistancePointToLineSegment(uv, segmentStart, segmentEnd);
-    return angledStart;
+    if(SideOfLine(uv, segmentStart, segmentEnd) < 0.)
+    {
+        return -distanceUvToHexSegment;
+    }
+    return distanceUvToHexSegment;
 }
 
 vec3 frag(vec2 uv)
 {
-    vec3 hexColor = vec3(1);
-    float onHexValue = isOnHex(uv);
-    return onHexValue * hexColor;
+   vec3 hexColor = vec3(0.04,0.1,0.4);
+   vec3 ret = vec3(0);
+   for(float i = 0.1; i < 0.9; i += 0.07)
+   {
+        ret += .0002 / pow(isOnHex(uv,0.03, vec2(0,i)),2.) * hexColor;
+   }
+    
+    return ret;
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
