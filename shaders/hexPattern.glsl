@@ -7,7 +7,6 @@ float rand(float co)
     return fract(sin(co*(90.5436)+0.234) * 47453.5453);
 }
 
-
 float DistancePointToLineSegment(vec2 queryPoint, vec2 startLineSegment, vec2 endLineSegment) {
     // the function works by treating the point like
     // a vector and projecting it onto the line segment 
@@ -40,7 +39,7 @@ float SideOfLine(vec2 query, vec2 startLine, vec2 endLine)
     (query.y - startLine.y)*(endLine.x - startLine.x);
 }
 
-float isOnHex(vec2 uv, float hexSize, vec2 pos)
+float hexDistance(vec2 uv, float hexSize, vec2 pos)
 {
     uv -= pos;
     float polarAngle = degrees(atan(uv.y , uv.x) + PI);
@@ -58,25 +57,31 @@ float isOnHex(vec2 uv, float hexSize, vec2 pos)
     return distanceUvToHexSegment;
 }
 
+const float CellCount = 7.;
 vec3 frag(vec2 uv)
 {
-   vec3 hexColor = vec3(0.04,0.1,0.4);
-   vec3 ret = vec3(0);
-   for(float i = 0.1; i < 0.9; i += 0.07)
-   {
-        ret += .0002 / pow(isOnHex(uv,0.03, vec2(0,i)),2.) * hexColor;
-   }
+    vec3 ret = vec3(0);
+    vec2 gridACelluv = vec2(mod(uv.x * CellCount,1.5), mod(uv.y * CellCount, 1.));
+    gridACelluv -= 0.5;
+    gridACelluv.y /= 1.15;
     
+    uv -= vec2(1.18,1.5);
+    vec2 gridBCelluv = vec2(mod(uv.x * CellCount,1.5), mod(uv.y * CellCount, 1.));
+    gridBCelluv -= 0.5;
+    gridBCelluv.y /= 1.15;
+    
+    ret += 0.0001 / pow(hexDistance(gridACelluv,0.5,vec2(0)),2.) * vec3(1);    
+    ret += 0.0001 / pow(hexDistance(gridBCelluv,0.5,vec2(0)),2.) * vec3(1.);
     return ret;
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     vec2 uv = fragCoord/iResolution.xy;
+    uv += iTime/20.;
     uv -= 0.5;
     vec3 base = vec3(0);
     vec3 result = base + frag(uv);
-    
     fragColor = vec4(result,1.);
     
 }
