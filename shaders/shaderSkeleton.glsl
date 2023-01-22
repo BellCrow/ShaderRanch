@@ -1,5 +1,5 @@
 //defines so the shader works out of the box with shadertoy
-#define u_time iGlobalTime
+#define u_time iTime
 
 //constants that are often used
 #define PI 3.1415926
@@ -18,5 +18,5 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
 vec3 calculateFragmentColor(vec2 uv)
 {
-    return vec3(1.);
+    return vec3(sin(u_time));
 }
