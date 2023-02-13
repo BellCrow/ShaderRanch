@@ -79,12 +79,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord )
     vec2 normalizedFragCoord = uv - vec2(0.5);
     vec3 fragmentColor = vec3(0);
 
-    vec2 start = vec2(SinXToY(-0.3,0.3,u_time),CosXToY(-0.3,0.3,u_time));
-    vec2 end = vec2(SinXToY(-0.3,0.3,u_time, 1.0,PI),CosXToY(-0.3,0.3,u_time,1.0,PI));
-    float fuzziness = SinXToY(0.00,0.00,u_time);
-    float gradient = LineMask(normalizedFragCoord, start,end, fuzziness);
+    float dist = dot(uv, vec2(iTime,iTime));
     // Output to screen
-    vec3 color = vec3(0.09, 0.78, 0);
-    fragmentColor = color * gradient;
+    fragmentColor += vec3(1) * step(1.,dist);
+    
     fragColor = vec4(fragmentColor, 1.0);
 }

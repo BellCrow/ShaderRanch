@@ -6,6 +6,24 @@
 
 vec3 calculateFragmentColor(vec2 uv);
 
+float SinXToY(float lowerBound, float upperBound, float value, float frequencyFactor, float frequencyOffset) {
+    float sinValue = sin(value * frequencyFactor + frequencyOffset);
+    //move the sine up to the interval 0->2
+    float noNegativeSin = sinValue + 1.;
+    //limit the sine down to 0->1
+    float zeroToOneSin = noNegativeSin / 2.;
+    //scales the amplitude of the sin to the desired size, that is described with x->y
+    float sinOfDesiredSize = zeroToOneSin * (upperBound - lowerBound);
+    //now move the sine along the x axis, so that x is actually the lowest possible value;
+    float finalSin = sinOfDesiredSize + lowerBound;
+    return finalSin;
+}
+
+float SinXToY(float lowerBound, float upperBound, float value) {
+    return SinXToY(lowerBound, upperBound, value, 1., 0.);
+}
+
+
 //all of the calculations on how to create the hex tiling 
 //has been taken from https://www.youtube.com/watch?v=VmrIDyYiJBA
 float SHexDistance(vec2 uv)
@@ -17,9 +35,9 @@ float SHexDistance(vec2 uv)
     return signedHexDistance;
 }
 
-vec3 calculateFragmentColor(vec2 uv)
+vec3 calculateHexWall(vec2 uv)
 {
-    float tileCount = 80.;
+    float tileCount = 30.;
     vec2 gridSpacing = vec2(sqrt(3.),3.);
 
      vec2 scaledGridA = uv * tileCount;
@@ -39,19 +57,33 @@ vec3 calculateFragmentColor(vec2 uv)
     }
 
     float hexMaxDistance = sqrt(3.) / 2.;
+    float smoothedDistance = smoothstep(0.1,5.,distance(hexId, vec2(0,0)));
+    float sizeModulation = SinXToY(0.5,.95, smoothedDistance - iTime,3.,0.);
+
+    // the -0.04 prevents weird color artifacts at the borders if the hexagons reach their max size
+    float hexWall = 0.02/ distance(SHexDistance(hexUv),(hexMaxDistance) * sizeModulation);
+    vec3 hexColor = vec3(1.0,0.,0.0);
+
     
-    float hexWall = smoothstep(SHexDistance(hexUv),hexMaxDistance,hexMaxDistance - 0.03) 
-                  - smoothstep(SHexDistance(hexUv),hexMaxDistance,hexMaxDistance - 0.1);
-    return vec3(hexUv.x,hexUv.y,0) * hexWall;
+
+    return hexColor * hexWall;
+}
+
+vec3 calculateFragmentColor(vec2 uv)
+{
+    vec3 ret = vec3(0);
+    ret += calculateHexWall(uv);
+
+    return ret;
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = fragCoord /iResolution.xy;
-    
+       
     //make coordinates go from -0.5 to 0.5
     uv -= vec2(0.5);
-    
+    //uv += iTime / 10.;
     vec3 pixelColor = calculateFragmentColor(uv);
 
     fragColor = vec4(pixelColor, 1);
